@@ -1,5 +1,6 @@
 const supabase = require("../config/supabase");
 
+// ================= LOGIN =================
 const login = async (req, res) => {
     try {
         const { roll_no, dob } = req.body;
@@ -38,6 +39,38 @@ const login = async (req, res) => {
     }
 };
 
+// ================= STUDENT PROFILE =================
+const getProfile = async (req, res) => {
+    try {
+        const { roll_no } = req.params;
+
+        const { data, error } = await supabase
+            .from("students")
+            .select("*")
+            .eq("roll_no", roll_no)
+            .single();
+
+        if (error || !data) {
+            return res.status(404).json({
+                success: false,
+                message: "Student not found."
+            });
+        }
+
+        res.json({
+            success: true,
+            student: data
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
 module.exports = {
-    login
+    login,
+    getProfile
 };

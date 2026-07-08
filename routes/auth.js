@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
-const { login } = require("../controllers/authController");
+const { login, getProfile } = require("../controllers/authController");
 
-// Student Login
+// Login
 router.post("/login", login);
+
+// Student Profile
+router.get("/profile/:roll_no", getProfile);
 
 module.exports = router;

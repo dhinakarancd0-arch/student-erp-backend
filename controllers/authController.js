@@ -127,10 +127,35 @@ const getTimetable = async (req, res) => {
         });
     }
 };
+const getResults = async (req, res) => {
+    try {
+        const { roll_no } = req.params;
+
+        const { data, error } = await supabase
+            .from("results")
+            .select("*")
+            .eq("roll_no", roll_no)
+            .order("subject");
+
+        if (error) throw error;
+
+        res.json({
+            success: true,
+            results: data
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
 
 module.exports = {
     login,
     getProfile,
     getAttendance,
-    getTimetable
+    getTimetable,
+    getResults
 };

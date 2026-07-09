@@ -100,8 +100,37 @@ const getAttendance = async (req, res) => {
     }
 };
 
+const getTimetable = async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from("time table")
+            .select("*")
+            .order("Day")
+            .order("Period");
+
+        if (error) {
+            return res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+
+        res.json({
+            success: true,
+            timetable: data
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
 module.exports = {
     login,
     getProfile,
-    getAttendance
+    getAttendance,
+    getTimetable
 };

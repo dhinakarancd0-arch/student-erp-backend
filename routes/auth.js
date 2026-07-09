@@ -6,7 +6,8 @@ const {
     getProfile,
     getAttendance,
     getTimetable,
-    getResults
+    getResults,
+    getLeaveRequests
 } = require("../controllers/authController");
 
 // Login
@@ -17,4 +18,5 @@ router.get("/profile/:roll_no", getProfile);
 router.get("/attendance/:roll_no", getAttendance);
 router.get("/timetable", getTimetable);
 router.get("/results/:roll_no", getResults);
+router.get("/leave/:roll_no", getLeaveRequests);
 module.exports = router;

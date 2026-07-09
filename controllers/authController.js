@@ -151,11 +151,36 @@ const getResults = async (req, res) => {
         });
     }
 };
+// Get Leave Requests
+const getLeaveRequests = async (req, res) => {
+    try {
+        const { roll_no } = req.params;
 
+        const { data, error } = await supabase
+            .from("leave_requests")
+            .select("*")
+            .eq("roll_no", roll_no)
+            .order("leave_date", { ascending: false });
+
+        if (error) throw error;
+
+        res.json({
+            success: true,
+            leaveRequests: data
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
 module.exports = {
     login,
     getProfile,
     getAttendance,
     getTimetable,
-    getResults
+    getResults,
+    getLeaveRequests
 };

@@ -69,8 +69,39 @@ const getProfile = async (req, res) => {
         });
     }
 };
+const getAttendance = async (req, res) => {
+    try {
+        const { roll_no } = req.params;
+
+        console.log("Received:", JSON.stringify(roll_no));
+
+        const { data, error } = await supabase
+            .from("attendance")
+            .select("*");
+
+        console.log("All attendance rows:", data);
+
+        const filtered = data.filter(
+            row => row.roll_no.trim() === roll_no.trim()
+        );
+
+        console.log("Filtered:", filtered);
+
+        res.json({
+            success: true,
+            attendance: filtered
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
 
 module.exports = {
     login,
-    getProfile
+    getProfile,
+    getAttendance
 };

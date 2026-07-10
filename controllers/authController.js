@@ -3,32 +3,41 @@ const supabase = require("../config/supabase");
 // ================= LOGIN =================
 const login = async (req, res) => {
     try {
-        const { roll_no, dob } = req.body;
+        const { roll_no, dob, role } = req.body;
 
         if (!roll_no || !dob) {
             return res.status(400).json({
                 success: false,
-                message: "Roll Number and DOB are required."
+                message: "ID and DOB are required."
             });
         }
 
+        let tableName = "students";
+        let idColumn = "roll_no";
+
+        if (role === "staff") {
+            tableName = "staff";
+            idColumn = "staff_id";
+        }
+
         const { data, error } = await supabase
-            .from("students")
+            .from(tableName)
             .select("*")
-            .eq("roll_no", roll_no)
+            .eq(idColumn, roll_no)
             .eq("dob", dob)
             .single();
 
         if (error || !data) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid Roll Number or DOB."
+                message: "Invalid ID or DOB."
             });
         }
 
         res.json({
             success: true,
-            student: data
+            user: data,
+            role: role
         });
 
     } catch (err) {
@@ -38,17 +47,24 @@ const login = async (req, res) => {
         });
     }
 };
-
 // ================= STUDENT PROFILE =================
-const getProfile = async (req, res) => {
-    try {
-        const { roll_no } = req.params;
+let tableName;
+let idColumn;
 
-        const { data, error } = await supabase
-            .from("students")
-            .select("*")
-            .eq("roll_no", roll_no)
-            .single();
+if (req.body.role === "staff") {
+    tableName = "staff";
+    idColumn = "staff_id";
+} else {
+    tableName = "students";
+    idColumn = "roll_no";
+}
+
+const { data, error } = await supabase
+    .from(tableName)
+    .select("*")
+    .eq(idColumn, roll_no)
+    .eq("dob", dob)
+    .single();
 
         if (error || !data) {
             return res.status(404).json({

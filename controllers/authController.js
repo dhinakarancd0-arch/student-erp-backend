@@ -4,14 +4,38 @@ const supabase = require("../config/supabase");
 const login = async (req, res) => {
     try {
         const { roll_no, dob, role } = req.body;
-
-        if (!roll_no || !dob) {
+        console.log("===== LOGIN REQUEST =====");
+        console.log(req.body);
+        console.log("Role:", role);
+        if (!roll_no || (role !== "admin" && !dob)) {
             return res.status(400).json({
                 success: false,
                 message: "ID and DOB are required."
             });
         }
 
+        if (role === "admin") {
+            if (roll_no === "ADMIN001") {
+                console.log("===== ADMIN LOGIN SUCCESS =====");
+                return res.json({
+                    success: true,
+                    user: {
+                        name: "System Admin",
+                        roll_no: "ADMIN001",
+                        dob: "",
+                        role: "admin"
+                    },
+                    role: role
+                });
+            } else {
+                return res.status(401).json({
+                    success: false,
+                    message: "Invalid admin credentials."
+                });
+            }
+        }
+        console.log("Table:", tableName);
+        console.log("Column:", idColumn);
         let tableName = "students";
         let idColumn = "roll_no";
 
@@ -36,45 +60,6 @@ const login = async (req, res) => {
 
         res.json({
             success: true,
-            user: data,
-            role: role
-        });
-
-    } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: err.message
-        });
-    }
-};
-// ================= STUDENT PROFILE =================
-let tableName;
-let idColumn;
-
-if (req.body.role === "staff") {
-    tableName = "staff";
-    idColumn = "staff_id";
-} else {
-    tableName = "students";
-    idColumn = "roll_no";
-}
-
-const { data, error } = await supabase
-    .from(tableName)
-    .select("*")
-    .eq(idColumn, roll_no)
-    .eq("dob", dob)
-    .single();
-
-        if (error || !data) {
-            return res.status(404).json({
-                success: false,
-                message: "Student not found."
-            });
-        }
-
-        res.json({
-            success: true,
             student: data
         });
 
@@ -85,6 +70,53 @@ const { data, error } = await supabase
         });
     }
 };
+
+// ================= STUDENT PROFILE =================
+const getProfile = async (req, res) => {
+    try {
+        const { roll_no } = req.params;
+
+        // Try to query students first
+        let { data, error } = await supabase
+            .from("students")
+            .select("*")
+            .eq("roll_no", roll_no)
+            .maybeSingle();
+
+        if (error || !data) {
+            // Try staff table
+            const { data: staffData, error: staffError } = await supabase
+                .from("staff")
+                .select("*")
+                .eq("staff_id", roll_no)
+                .maybeSingle();
+
+            if (staffError || !staffData) {
+                return res.status(404).json({
+                    success: false,
+                    message: "User not found."
+                });
+            }
+
+            return res.json({
+                success: true,
+                user: staffData
+            });
+        }
+
+        res.json({
+            success: true,
+            user: data
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
 const getAttendance = async (req, res) => {
     try {
         const { roll_no } = req.params;
@@ -143,6 +175,7 @@ const getTimetable = async (req, res) => {
         });
     }
 };
+
 const getResults = async (req, res) => {
     try {
         const { roll_no } = req.params;
@@ -167,6 +200,7 @@ const getResults = async (req, res) => {
         });
     }
 };
+
 // Get Leave Requests
 const getLeaveRequests = async (req, res) => {
     try {
@@ -192,6 +226,7 @@ const getLeaveRequests = async (req, res) => {
         });
     }
 };
+
 const submitLeaveRequest = async (req, res) => {
     try {
         const {
@@ -234,6 +269,7 @@ const submitLeaveRequest = async (req, res) => {
         });
     }
 };
+
 module.exports = {
     login,
     getProfile,

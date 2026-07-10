@@ -176,11 +176,54 @@ const getLeaveRequests = async (req, res) => {
         });
     }
 };
+const submitLeaveRequest = async (req, res) => {
+    try {
+        const {
+            roll_no,
+            student_name,
+            leave_date,
+            reason
+        } = req.body;
+
+        const { data, error } = await supabase
+            .from("leave_requests")
+            .insert([
+                {
+                    roll_no,
+                    student_name,
+                    leave_date,
+                    reason,
+                    status: "Pending"
+                }
+            ])
+            .select();
+
+        if (error) {
+            return res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Leave request submitted successfully",
+            data
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
 module.exports = {
     login,
     getProfile,
     getAttendance,
     getTimetable,
     getResults,
-    getLeaveRequests
+    getLeaveRequests,
+    submitLeaveRequest  
 };
